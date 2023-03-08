@@ -1,193 +1,166 @@
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.application.Application;
-import javafx.geometry.Bounds;
-import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.input.KeyCode;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
-import javafx.scene.text.TextAlignment;
-import javafx.stage.Stage;
-import javafx.util.Duration;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.Random;
 
-public class Pong extends Application {
-
+public class Pong extends Frame implements KeyListener, Runnable {
     private static final int WIDTH = 800;
     private static final int HEIGHT = 600;
-
     private static final int PADDLE_WIDTH = 10;
-    private static final int PADDLE_HEIGHT = 80;
-    private static final int PADDLE_SPEED = 10;
-
+    private static final int PADDLE_HEIGHT = 100;
     private static final int BALL_RADIUS = 10;
     private static final int BALL_SPEED = 5;
-
-    private static final int SCORE_SIZE = 36;
 
     private int player1Score = 0;
     private int player2Score = 0;
 
-    private boolean gameStarted = false;
-
-    private Rectangle paddle1;
-    private Rectangle paddle2;
+    private Rectangle paddlel;
+    private Rectangle paddler;
     private Rectangle ball;
 
-    private double ballX = BALL_SPEED;
-    private double ballY = BALL_SPEED;
+    private double dx;
+    private double dy;
 
-    @Override
-    public void start(Stage primaryStage) {
+    private boolean gameStarted = false;
 
-        Canvas canvas = new Canvas(WIDTH, HEIGHT);
-        GraphicsContext gc = canvas.getGraphicsContext2D();
+    public Pong() {
+        setTitle("Pong");
+        setSize(WIDTH, HEIGHT);
+        setResizable(false);
+        addKeyListener(this);
 
-        paddle1 = new Rectangle(PADDLE_WIDTH, PADDLE_HEIGHT, Color.WHITE);
-        paddle1.setTranslateX(0);
-        paddle1.setTranslateY(HEIGHT / 2 - PADDLE_HEIGHT / 2);
+        paddlel = new Rectangle(0, HEIGHT / 2 - PADDLE_HEIGHT / 2, PADDLE_WIDTH, PADDLE_HEIGHT);
+        paddler = new Rectangle(WIDTH - PADDLE_WIDTH, HEIGHT / 2 - PADDLE_HEIGHT / 2, PADDLE_WIDTH, PADDLE_HEIGHT);
+        ball = new Rectangle(WIDTH / 2 - BALL_RADIUS, HEIGHT / 2 - BALL_RADIUS, BALL_RADIUS * 2, BALL_RADIUS * 2);
 
-        paddle2 = new Rectangle(PADDLE_WIDTH, PADDLE_HEIGHT, Color.WHITE);
-        paddle2.setTranslateX(WIDTH - PADDLE_WIDTH);
-        paddle2.setTranslateY(HEIGHT / 2 - PADDLE_HEIGHT / 2);
-
-        ball = new Rectangle(BALL_RADIUS * 2, BALL_RADIUS * 2, Color.WHITE);
-        ball.setTranslateX(WIDTH / 2 - BALL_RADIUS);
-        ball.setTranslateY(HEIGHT / 2 - BALL_RADIUS);
-
-        gc.setFont(Font.font(SCORE_SIZE));
-        gc.setTextAlign(TextAlignment.CENTER);
-        gc.setFill(Color.WHITE);
-        gc.setStroke(Color.BLACK);
-
-        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(10), event -> {
-            if (gameStarted) {
-                moveBall();
-            }
-        }));
-        timeline.setCycleCount(Timeline.INDEFINITE);
-
-        canvas.setOnMouseClicked(event -> {
-            if (!gameStarted) {
-                gameStarted = true;
-                timeline.play();
-            }primaryStage.setTitle("Pong");
-    primaryStage.setScene(scene);
-    primaryStage.show();
-
-    timeline.play();
-}
-
-private void moveBall() {
-    ball.setTranslateX(ball.getTranslateX() + ballX);
-    ball.setTranslateY(ball.getTranslateY() + ballY);
-
-    checkPaddleCollision();
-    checkBoundaryCollision();
-
-    if (ball.getTranslateX() < 0) {
-        player2Score++;
         resetBall();
-    } else if (ball.getTranslateX() > WIDTH - BALL_RADIUS * 2) {
-        player1Score++;
-        resetBall();
-    }
-}
 
-private void checkPaddleCollision() {
-    Bounds bounds1 = paddle1.getBoundsInParent();
-    Bounds bounds2 = paddle2.getBoundsInParent();
-    Bounds ballBounds = ball.getBoundsInParent();
-
-    if (ballBounds.intersects(bounds1) || ballBounds.intersects(bounds2)) {
-        ballX *= -1;
-    }
-}
-
-private void checkBoundaryCollision() {
-    if (ball.getTranslateY() < 0 || ball.getTranslateY() > HEIGHT - BALL_RADIUS * 2) {
-        ballY *= -1;
-    }
-}
-
-private void resetBall() {
-    ballX = BALL_SPEED;
-    ballY = BALL_SPEED;
-    ball.setTranslateX(WIDTH / 2 - BALL_RADIUS);
-    ball.setTranslateY(HEIGHT / 2 - BALL_RADIUS);
-    gameStarted = false;
-}
-
-public static void main(String[] args) {
-    launch(args);
-}
-        });
-
-        canvas.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.W && paddle1.getTranslateY() > 0) {
-                paddle1.setTranslateY(paddle1.getTranslateY() - PADDLE_SPEED);
-            } else if (event.getCode() == KeyCode.S && paddle1.getTranslateY() + PADDLE_HEIGHT < HEIGHT) {
-                paddle1.setTranslateY(paddle1.getTranslateY() + PADDLE_SPEED);
-            } else if (event.getCode() == KeyCode.UP && paddle2.getTranslateY() > 0) {
-                paddle2.setTranslateY(paddle2.getTranslateY() - PADDLE_SPEED);
-            } else if (event.getCode() == KeyCode.DOWN && paddle2.getTranslateY() + PADDLE_HEIGHT < HEIGHT) {
-                paddle2.setTranslateY(paddle2.getTranslateY() + PADDLE_SPEED);
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                // Exit the application when the window is closed
+                System.exit(0);
             }
         });
 
-        StackPane root = new StackPane(canvas, paddle1, paddle2, ball);
-
-        Scene scene = new Scene(root);
-primaryStage.setTitle("Pong");
-    primaryStage.setScene(scene);
-    primaryStage.show();
-
-    timeline.play();
-}
-
-private void moveBall() {
-    ball.setTranslateX(ball.getTranslateX() + ballX);
-    ball.setTranslateY(ball.getTranslateY() + ballY);
-
-    checkPaddleCollision();
-    checkBoundaryCollision();
-
-    if (ball.getTranslateX() < 0) {
-        player2Score++;
-        resetBall();
-    } else if (ball.getTranslateX() > WIDTH - BALL_RADIUS * 2) {
-        player1Score++;
-        resetBall();
+        setVisible(true);
     }
-}
 
-private void checkPaddleCollision() {
-    Bounds bounds1 = paddle1.getBoundsInParent();
-    Bounds bounds2 = paddle2.getBoundsInParent();
-    Bounds ballBounds = ball.getBoundsInParent();
-
-    if (ballBounds.intersects(bounds1) || ballBounds.intersects(bounds2)) {
-        ballX *= -1;
+    public void paint(Graphics g) {
+        g.setColor(Color.BLACK);
+        g.fillRect(0, 0, WIDTH, HEIGHT);
+        g.setColor(Color.WHITE);
+        g.fillRect(paddlel.x, paddlel.y, paddlel.width, paddlel.height);
+        g.fillRect(paddler.x, paddler.y, paddler.width, paddler.height);
+        g.fillOval(ball.x, ball.y, ball.width, ball.height);
+        g.setFont(new Font("Arial", Font.BOLD, 32));
+        g.drawString(player1Score + " - " + player2Score, WIDTH / 2 - 50, 50);
     }
-}
 
-private void checkBoundaryCollision() {
-    if (ball.getTranslateY() < 0 || ball.getTranslateY() > HEIGHT - BALL_RADIUS * 2) {
-        ballY *= -1;
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_W && paddlel.y > 0) {
+            paddlel.y -= 20;
+        } else if (e.getKeyCode() == KeyEvent.VK_S && paddlel.y + PADDLE_HEIGHT < HEIGHT) {
+            paddlel.y += 20;
+        } else if (e.getKeyCode() == KeyEvent.VK_UP && paddler.y > 0) {
+            paddler.y -= 20;
+        } else if (e.getKeyCode() == KeyEvent.VK_DOWN && paddler.y + PADDLE_HEIGHT < HEIGHT) {
+            paddler.y += 20;
+        } else if (e.getKeyCode() == KeyEvent.VK_SPACE && !gameStarted) {
+            gameStarted = true;
+            Thread t = new Thread(this);
+            t.start();
+        } else if (e.getKeyCode() == KeyEvent.VK_Q) {
+            System.exit(0);
+        }
     }
-}
 
-private void resetBall() {
-    ballX = BALL_SPEED;
-    ballY = BALL_SPEED;
-    ball.setTranslateX(WIDTH / 2 - BALL_RADIUS);
-    ball.setTranslateY(HEIGHT / 2 - BALL_RADIUS);
-    gameStarted = false;
-}
+    public void keyTyped(KeyEvent e) {
+    }
 
-public static void main(String[] args) {
-    launch(args);
+    public void keyReleased(KeyEvent e) {
+    }
+
+    public void run() {
+        while (gameStarted) {
+            moveBall();
+
+            if (ball.intersects(paddlel)) {
+                Random random = new Random();
+                int angle = random.nextInt(30) + 20;
+                dx = Math.cos(Math.toRadians(angle));
+                dy = Math.sin(Math.toRadians(angle));
+                if (random.nextBoolean()) {
+                    dy = -dy;
+                }
+                dx = Math.abs(dx);
+            } else if (ball.intersects(paddler)) {
+                Random random = new Random();
+                int angle = random.nextInt(30) + 20;
+                dx = Math.cos(Math.toRadians(angle));
+                dy = Math.sin(Math.toRadians(angle));
+                if (random.nextBoolean()) {
+                    dy = -dy;
+                }
+                dx = -Math.abs(dx);
+            }
+
+            if (paddlel.y < 0) {
+                paddlel.y = 0;
+            } else if (paddlel.y + PADDLE_HEIGHT > HEIGHT) {
+                paddlel.y = HEIGHT - PADDLE_HEIGHT;
+            }
+
+            if (paddler.y < 0) {
+                paddler.y = 0;
+            } else if (paddler.y + PADDLE_HEIGHT > HEIGHT) {
+                paddler.y = HEIGHT - PADDLE_HEIGHT;
+            }
+
+            repaint();
+
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+            }
+        }
+    }
+
+    private void moveBall() {
+        ball.x += dx * BALL_SPEED;
+        ball.y += dy * BALL_SPEED;
+
+        if (ball.x < 0) {
+            player2Score++;
+            resetBall();
+        } else if (ball.x + BALL_RADIUS * 2 > WIDTH) {
+            player1Score++;
+            resetBall();
+        }
+
+        if (ball.y < 0 || ball.y + BALL_RADIUS * 2 > HEIGHT) {
+            dy = -dy;
+        }
+    }
+
+    private void resetBall() {
+        Random random = new Random();
+        int angle = random.nextInt(30) + 20;
+        dx = Math.cos(Math.toRadians(angle));
+        dy = Math.sin(Math.toRadians(angle));
+        if (random.nextBoolean()) {
+            dy = -dy;
+        }
+        if (random.nextBoolean()) {
+            dx = -dx;
+        }
+        ball.x = WIDTH / 2 - BALL_RADIUS;
+        ball.y = HEIGHT / 2 - BALL_RADIUS;
+        paddlel.y = HEIGHT / 2 - PADDLE_HEIGHT / 2;
+        paddler.y = HEIGHT / 2 - PADDLE_HEIGHT / 2;
+        gameStarted = false;
+    }
+
+    public static void main(String[] args) {
+        Pong pong = new Pong();
+    }
 }
