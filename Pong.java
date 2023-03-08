@@ -23,17 +23,17 @@ public class Pong extends Frame implements KeyListener, Runnable {
     private boolean gameStarted = false;
 
     public Pong() {
+        // Set up game objects
+        paddlel = new Rectangle(0, HEIGHT / 2 - PADDLE_HEIGHT / 2, PADDLE_WIDTH, PADDLE_HEIGHT);
+        paddler = new Rectangle(WIDTH - PADDLE_WIDTH, HEIGHT / 2 - PADDLE_HEIGHT / 2, PADDLE_WIDTH, PADDLE_HEIGHT);
+        ball = new Rectangle(WIDTH / 2 - BALL_RADIUS, HEIGHT / 2 - BALL_RADIUS, BALL_RADIUS * 2, BALL_RADIUS * 2);
+        resetBall();
+
+        // Set up game window
         setTitle("Pong");
         setSize(WIDTH, HEIGHT);
         setResizable(false);
         addKeyListener(this);
-
-        paddlel = new Rectangle(0, HEIGHT / 2 - PADDLE_HEIGHT / 2, PADDLE_WIDTH, PADDLE_HEIGHT);
-        paddler = new Rectangle(WIDTH - PADDLE_WIDTH, HEIGHT / 2 - PADDLE_HEIGHT / 2, PADDLE_WIDTH, PADDLE_HEIGHT);
-        ball = new Rectangle(WIDTH / 2 - BALL_RADIUS, HEIGHT / 2 - BALL_RADIUS, BALL_RADIUS * 2, BALL_RADIUS * 2);
-
-        resetBall();
-
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -41,18 +41,30 @@ public class Pong extends Frame implements KeyListener, Runnable {
                 System.exit(0);
             }
         });
-
         setVisible(true);
     }
 
     public void paint(Graphics g) {
+        // Set color to black
         g.setColor(Color.BLACK);
+
+        // Draw background
         g.fillRect(0, 0, WIDTH, HEIGHT);
+
+        // Set color to white
         g.setColor(Color.WHITE);
+
+        // Draw paddles
         g.fillRect(paddlel.x, paddlel.y, paddlel.width, paddlel.height);
         g.fillRect(paddler.x, paddler.y, paddler.width, paddler.height);
+
+        // Draw ball
         g.fillOval(ball.x, ball.y, ball.width, ball.height);
+
+        // Set font to "bold arial"
         g.setFont(new Font("Arial", Font.BOLD, 32));
+
+        // Draw scoreboard
         g.drawString(player1Score + " - " + player2Score, WIDTH / 2 - 50, 50);
     }
 
@@ -84,6 +96,7 @@ public class Pong extends Frame implements KeyListener, Runnable {
         while (gameStarted) {
             moveBall();
 
+            // ugh
             if (ball.intersects(paddlel)) {
                 Random random = new Random();
                 int angle = random.nextInt(30) + 20;
